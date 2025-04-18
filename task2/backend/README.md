@@ -4,9 +4,6 @@ This is a microservice that provides endpoints to get top users and posts from a
 
 ## API Documentation
 
-### Get Comments API
-
-
 ### Endpoints
 
 1. **Get Top Users**
@@ -35,18 +32,5 @@ npm install
 2. Start the server:
 ```bash
 node src/index.js
-```
-
-## Example Usage
-
-```bash
-# Get top 5 users
-curl -X GET "http://localhost:3000/users"
-
-# Get popular posts
-curl -X GET "http://localhost:3000/posts?type=popular"
-
-# Get latest posts
-curl -X GET "http://localhost:3000/posts?type=latest"
 ```
 

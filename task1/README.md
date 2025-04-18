@@ -64,7 +64,7 @@ The server will run at `http://localhost:3000`
 ## HIT WITHOUT CACHING
 ![without caching](docs/image.png)
 
-## HIT WITh CACHING
+## HIT WITH CACHING
 ![with caching](docs/image2.png)
 
 

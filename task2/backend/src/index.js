@@ -1,13 +1,22 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 const API_BASE_URL = process.env.API_BASE_URL || 'http://20.244.56.144/evaluation-service';
 
-// Authentication details
+const corsOptions = {
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
 const AUTH_PAYLOAD = {
     email: "saransh.gupta_cs22@gla.ac.in",
     name: "saransh gupta",
@@ -19,10 +28,8 @@ const AUTH_PAYLOAD = {
 
 let authToken = null;
 
-// Helper function to sleep
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// Get auth token once at startup
 async function initAuth() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth`, {
@@ -46,11 +53,9 @@ async function initAuth() {
     }
 }
 
-// API call function with retries
 async function callApi(url, retries = 3) {
     for (let i = 0; i < retries; i++) {
         try {
-            // Add delay between requests
             await sleep(1000);
 
             const response = await fetch(url, {
@@ -60,10 +65,9 @@ async function callApi(url, retries = 3) {
                 }
             });
 
-            // If we get a 503, wait and retry
             if (response.status === 503) {
                 console.log(`Got 503 for ${url}, attempt ${i + 1}/${retries}`);
-                await sleep(2000 * (i + 1)); // Exponential backoff
+                await sleep(2000 * (i + 1)); 
                 continue;
             }
 
@@ -74,19 +78,17 @@ async function callApi(url, retries = 3) {
             return await response.json();
         } catch (error) {
             if (i === retries - 1) throw error;
-            await sleep(2000 * (i + 1)); // Exponential backoff
+            await sleep(2000 * (i + 1)); 
         }
     }
     throw new Error(`Failed after ${retries} retries`);
 }
 
-// Initialize server
 async function startServer() {
     await initAuth();
 
     app.use(express.json());
 
-    // Get top users endpoint
     app.get('/users', async (req, res) => {
         try {
             const userData = await callApi(`${API_BASE_URL}/users`);
@@ -100,14 +102,12 @@ async function startServer() {
                 commentCount: 0
             }));
 
-            // Process first 10 users to find top 5
             const limitedUsers = users.slice(0, 10);
             
             for (const user of limitedUsers) {
                 try {
                     const postsData = await callApi(`${API_BASE_URL}/users/${user.id}/posts`);
                     if (postsData.posts && Array.isArray(postsData.posts)) {
-                        // Get first 5 posts per user
                         const limitedPosts = postsData.posts.slice(0, 5);
                         for (const post of limitedPosts) {
                             try {
@@ -136,7 +136,6 @@ async function startServer() {
         }
     });
 
-    // Get posts endpoint
     app.get('/posts', async (req, res) => {
         try {
             const type = req.query.type || 'popular';
@@ -150,14 +149,12 @@ async function startServer() {
             }
 
             const allPosts = [];
-            // Get first 5 users
             const limitedUsers = Object.entries(userData.users).slice(0, 5);
 
             for (const [userId, userName] of limitedUsers) {
                 try {
                     const postsData = await callApi(`${API_BASE_URL}/users/${userId}/posts`);
                     if (postsData.posts && Array.isArray(postsData.posts)) {
-                        // Get first 5 posts per user
                         const limitedPosts = postsData.posts.slice(0, 5);
                         for (const post of limitedPosts) {
                             try {
@@ -201,5 +198,4 @@ async function startServer() {
     });
 }
 
-// Start everything
-startServer().catch(console.error); 
+startServer().catch(console.error);
