@@ -62,9 +62,9 @@ The server will run at `http://localhost:3000`
 - Cache key is created on sorted numbers for consistent results
 
 ## HIT WITHOUT CACHING
-[without caching](docs/image.png)
+![without caching](docs/image.png)
 
 ## HIT WITh CACHING
-[with caching](docs/image2.png)
+![with caching](docs/image2.png)
 
 
